@@ -24,6 +24,8 @@ urlpatterns = [
     # Gestion de la paie
     path('paie/', views.gestion_paie, name='gestion_paie'),
     path('paie/generer/<int:employe_id>/', views.generer_paie, name='generer_paie'),
+    path('paie/voir/<int:paie_id>/', views.voir_bulletin_paie, name='voir_bulletin_paie'),
+    path('paie/changer-statut/<int:paie_id>/', views.changer_statut_paie, name='changer_statut_paie'),
     
     # Gestion des approvisionnements
     path('approvisionnements/', views.approvisionnements, name='approvisionnements'),

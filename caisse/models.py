@@ -115,10 +115,17 @@ class Vente(models.Model):
                     raise ValidationError(f"Stock insuffisant. Disponible: {produit.quantite_stock}, Demandé: {quantite}")
                 
                 # Création de la vente
+                # Génération du numéro de transaction avant validation
+                timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+                random_num = random.randint(1000, 9999)
+                numero_transaction = f"STT-{timestamp}-{random_num}"
+                
                 vente = Vente(
                     produit=produit,
                     quantite=quantite,
                     prix_unitaire=produit.prix_unitaire,
+                    prix_total=quantite * produit.prix_unitaire,
+                    numero_transaction=numero_transaction,
                     client_id=client_id
                 )
                 vente.full_clean()

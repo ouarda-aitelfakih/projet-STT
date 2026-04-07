@@ -89,12 +89,14 @@ class Employe(models.Model):
         """STT : Validation des données de l'employé"""
         if self.taux_horaire <= 0:
             raise ValidationError("Le taux horaire doit être positif")
-        if self.date_embauche > timezone.now().date():
+        if self.date_embauche and self.date_embauche > timezone.now().date():
             raise ValidationError("La date d'embauche ne peut pas être dans le futur")
     
     @property
     def anciennete(self):
         """STT : Calcule l'ancienneté de l'employé"""
+        if not self.date_embauche:
+            return 0
         aujourd_hui = timezone.now().date()
         difference = aujourd_hui - self.date_embauche
         return difference.days // 365  # Années complètes
@@ -113,7 +115,7 @@ class Paie(models.Model):
     """
     employe = models.ForeignKey(Employe, on_delete=models.PROTECT, verbose_name="Employé")
     heures_travaillees = models.DecimalField(max_digits=5, decimal_places=1, verbose_name="Heures travaillées")
-    salaire_calcule = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Salaire calculé (MAD)")
+    salaire_calcule = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True, verbose_name="Salaire calculé (MAD)")
     mois = models.CharField(max_length=20, verbose_name="Mois (AAAA-MM)")
     date_generation = models.DateTimeField(auto_now_add=True, verbose_name="Date de génération")
     statut = models.CharField(
@@ -222,8 +224,14 @@ class Approvisionnement(models.Model):
         """STT : Validation des données d'approvisionnement"""
         if self.quantite_recue <= 0:
             raise ValidationError("La quantité reçue doit être positive")
-        if self.cout_total <= 0:
-            raise ValidationError("Le coût total doit être positif")
+    
+    def save(self, *args, **kwargs):
+        """STT : Calcul automatique du coût total avant sauvegarde"""
+        # Calcul automatique du coût total basé sur le prix unitaire du produit
+        if self.quantite_recue and self.produit:
+            self.cout_total = self.quantite_recue * self.produit.prix_unitaire
+        
+        super().save(*args, **kwargs)
     
     @staticmethod
     def enregistrer_approvisionnement(produit_id, quantite_recue, fournisseur, cout_total, reference_facture=""):
@@ -263,10 +271,8 @@ class Approvisionnement(models.Model):
     
     @property
     def cout_unitaire(self):
-        """STT : Calcule le coût unitaire de l'approvisionnement"""
-        if self.quantite_recue > 0:
-            return self.cout_total / self.quantite_recue
-        return 0
+        """STT : Retourne le prix unitaire du produit"""
+        return self.produit.prix_unitaire if self.produit else 0
     
     @classmethod
     def get_approvisionnements_mois(cls, mois=None):

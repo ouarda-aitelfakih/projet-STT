@@ -326,6 +326,43 @@ def approvisionnements(request):
     return render(request, 'ressources/approvisionnements.html', context)
 
 
+def voir_bulletin_paie(request, paie_id):
+    """
+    STT - Affichage détaillé d'un bulletin de paie
+    Montre les détails complets du bulletin de paie
+    """
+    paie = get_object_or_404(Paie, id=paie_id)
+    
+    context = {
+        'paie': paie,
+    }
+    return render(request, 'ressources/voir_bulletin_paie.html', context)
+
+
+def changer_statut_paie(request, paie_id):
+    """
+    STT - Modification du statut d'une paie
+    Permet de changer le statut (en_attente -> paye -> annule)
+    """
+    paie = get_object_or_404(Paie, id=paie_id)
+    
+    if request.method == 'GET':
+        nouveau_statut = request.GET.get('statut')
+        if nouveau_statut in ['en_attente', 'paye', 'annule']:
+            ancien_statut = paie.get_statut_display()
+            paie.statut = nouveau_statut
+            paie.save()
+            
+            messages.success(
+                request, 
+                f'Statut de la paie de {paie.employe.nom} changé: {ancien_statut} → {paie.get_statut_display()}'
+            )
+        else:
+            messages.error(request, 'Statut invalide')
+    
+    return redirect('ressources:gestion_paie')
+
+
 def enregistrer_approvisionnement(request):
     """
     STT - Enregistrement d'un approvisionnement
