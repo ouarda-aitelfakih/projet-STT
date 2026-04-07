@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ajouter un Client - STT Supermarché{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-person-plus"></i> Ajouter un Client</h1>
+            <a href="{% url 'ressources:liste_clients' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour aux clients
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-person-plus"></i> Informations du Client</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nom" class="form-label">Nom complet *</label>
+                            <input type="text" class="form-control" id="nom" name="nom" required
+                                   placeholder="Ex: Mohammed Alami">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="telephone" class="form-label">Téléphone *</label>
+                            <input type="tel" class="form-control" id="telephone" name="telephone" required
+                                   placeholder="Ex: 0612345678">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="Ex: client@email.com">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="adresse" class="form-label">Adresse</label>
+                            <textarea class="form-control" id="adresse" name="adresse" rows="3"
+                                      placeholder="Adresse complète"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="client_fidele" name="client_fidele">
+                                <label class="form-check-label" for="client_fidele">
+                                    Client fidèle
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-stt btn-lg">
+                                <i class="bi bi-check-circle"></i> Ajouter le client
+                            </button>
+                            <a href="{% url 'ressources:liste_clients' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Aide STT</h5>
+            </div>
+            <div class="card-body">
+                <h6>Informations requises :</h6>
+                <ul class="small">
+                    <li><strong>Nom :</strong> Nom complet du client</li>
+                    <li><strong>Téléphone :</strong> Obligatoire pour contacter</li>
+                    <li><strong>Email :</strong> Optionnel mais recommandé</li>
+                    <li><strong>Adresse :</strong> Pour les livraisons</li>
+                    <li><strong>Client fidèle :</strong> Pour les avantages</li>
+                </ul>
+                
+                <hr>
+                
+                <h6><i class="bi bi-shield-check text-success"></i> Validation STT :</h6>
+                <ul class="small">
+                    <li>Nom unique recommandé</li>
+                    <li>Téléphone format marocain</li>
+                    <li>Email valide si fourni</li>
+                </ul>
+                
+                <div class="alert alert-info small">
+                    <i class="bi bi-lightbulb"></i> 
+                    Le système suivra automatiquement l'historique d'achats pour chaque client.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations STT -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-stt alert-info">
+            <h5><i class="bi bi-info-circle"></i> Gestion des Clients - STT</h5>
+            <p class="mb-2">
+                <strong>Propriété ACID - Cohérence :</strong> 
+                Chaque client est lié de manière cohérente à l'historique de ses achats, 
+                garantissant l'intégrité des données relationnelles.
+            </p>
+            <p class="mb-0">
+                <strong>Suivi client :</strong> 
+                Le système maintient un historique complet des transactions par client, 
+                permettant une analyse précise du comportement d'achat.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

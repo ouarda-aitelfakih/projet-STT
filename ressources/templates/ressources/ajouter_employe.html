@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ajouter un Employé - STT Supermarché{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-person-plus"></i> Ajouter un Employé</h1>
+            <a href="{% url 'ressources:liste_employes' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour aux employés
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-person-badge"></i> Informations de l'Employé</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nom" class="form-label">Nom complet *</label>
+                            <input type="text" class="form-control" id="nom" name="nom" required
+                                   placeholder="Ex: Karim Reda">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="poste" class="form-label">Poste *</label>
+                            <select class="form-select" id="poste" name="poste" required>
+                                <option value="">-- Sélectionner un poste --</option>
+                                <option value="caissier">Caissier</option>
+                                <option value="gestionnaire_stock">Gestionnaire de stock</option>
+                                <option value="manager">Manager</option>
+                                <option value="vendeur">Vendeur</option>
+                                <option value="agent_securite">Agent de sécurité</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="taux_horaire" class="form-label">Taux horaire (MAD) *</label>
+                            <input type="number" class="form-control" id="taux_horaire" name="taux_horaire" 
+                                   step="0.01" min="0" required placeholder="25.00">
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="telephone" class="form-label">Téléphone *</label>
+                            <input type="tel" class="form-control" id="telephone" name="telephone" required
+                                   placeholder="Ex: 0661234567">
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="Ex: employe@email.com">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="date_embauche" class="form-label">Date d'embauche *</label>
+                            <input type="date" class="form-control" id="date_embauche" name="date_embauche" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Statut</label>
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="actif" name="actif" checked>
+                                <label class="form-check-label" for="actif">
+                                    Employé actif
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-stt btn-lg">
+                                <i class="bi bi-check-circle"></i> Ajouter l'employé
+                            </button>
+                            <a href="{% url 'ressources:liste_employes' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Aide STT</h5>
+            </div>
+            <div class="card-body">
+                <h6>Informations requises :</h6>
+                <ul class="small">
+                    <li><strong>Nom :</strong> Nom complet de l'employé</li>
+                    <li><strong>Poste :</strong> Fonction dans le supermarché</li>
+                    <li><strong>Taux horaire :</strong> Pour calcul de la paie</li>
+                    <li><strong>Téléphone :</strong> Pour contacter</li>
+                    <li><strong>Date d'embauche :</strong> Pour l'ancienneté</li>
+                </ul>
+                
+                <hr>
+                
+                <h6><i class="bi bi-shield-check text-success"></i> Validation STT :</h6>
+                <ul class="small">
+                    <li>Taux horaire doit être positif</li>
+                    <li>Date d'embauche ne peut pas être dans le futur</li>
+                    <li>Nom unique recommandé</li>
+                </ul>
+                
+                <div class="alert alert-info small">
+                    <i class="bi bi-lightbulb"></i> 
+                    Le système calculera automatiquement l'ancienneté et les statistiques de paie.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations STT -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-stt alert-info">
+            <h5><i class="bi bi-info-circle"></i> Gestion des Employés - STT</h5>
+            <p class="mb-2">
+                <strong>Propriété ACID - Durabilité :</strong> 
+                Les informations sur les employés et leurs paies sont stockées de manière 
+                permanente, garantissant la pérennité des données même en cas de panne système.
+            </p>
+            <p class="mb-0">
+                <strong>Gestion de la paie :</strong> 
+                Le système assure le calcul automatique et cohérent des salaires, 
+                avec suivi historique complet pour chaque employé.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

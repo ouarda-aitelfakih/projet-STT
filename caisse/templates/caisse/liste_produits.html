@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Liste des Produits - STT Supermarché{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-box"></i> Gestion des Produits</h1>
+            <div>
+                <a href="{% url 'caisse:ajouter_produit' %}" class="btn btn-success me-2">
+                    <i class="bi bi-plus-circle"></i> Ajouter un produit
+                </a>
+                <a href="{% url 'caisse:accueil' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="alerte" class="form-label">Filtrer par alerte</label>
+                        <select class="form-select" id="alerte" name="alerte">
+                            <option value="">Tous les produits</option>
+                            <option value="oui" {% if alerte_stock == 'oui' %}selected{% endif %}>
+                                Uniquement les produits en alerte
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-funnel"></i> Filtrer
+                        </button>
+                        <a href="{% url 'caisse:liste_produits' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Réinitialiser
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des produits -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0">
+                    <i class="bi bi-box"></i> 
+                    Produits ({{ produits.count }})
+                    {% if alerte_stock == 'oui' %}
+                        <span class="badge bg-danger ms-2">En alerte de stock</span>
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if produits %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Catégorie</th>
+                                    <th>Prix unitaire</th>
+                                    <th>Stock actuel</th>
+                                    <th>Seuil alerte</th>
+                                    <th>Statut</th>
+                                    <th>Date d'ajout</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for produit in produits %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ produit.nom }}</strong>
+                                        {% if produit.est_en_alerte_stock %}
+                                            <i class="bi bi-exclamation-triangle text-danger" title="Stock bas"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ produit.categorie }}</span>
+                                    </td>
+                                    <td>{{ produit.prix_unitaire|floatformat:2 }} MAD</td>
+                                    <td>
+                                        <span class="{% if produit.est_en_alerte_stock %}text-danger fw-bold{% else %}text-success{% endif %}">
+                                            {{ produit.quantite_stock }}
+                                        </span>
+                                    </td>
+                                    <td>{{ produit.seuil_alerte }}</td>
+                                    <td>
+                                        {% if produit.est_en_alerte_stock %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-exclamation-triangle"></i> Stock bas
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle"></i> OK
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ produit.date_ajout|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'caisse:modifier_produit' produit.id %}" 
+                                               class="btn btn-sm btn-outline-primary" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'caisse:nouvelle_vente' %}?produit={{ produit.id }}" 
+                                               class="btn btn-sm btn-outline-success" title="Vendre">
+                                                <i class="bi bi-cash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-box text-muted fs-1"></i>
+                        <h5 class="text-muted mt-3">Aucun produit trouvé</h5>
+                        <p class="text-muted">
+                            {% if alerte_stock == 'oui' %}
+                                Aucun produit en alerte de stock
+                            {% else %}
+                                Commencez par ajouter des produits à votre inventaire
+                            {% endif %}
+                        </p>
+                        <a href="{% url 'caisse:ajouter_produit' %}" class="btn btn-stt">
+                            <i class="bi bi-plus-circle"></i> Ajouter un produit
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques -->
+{% if produits %}
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ produits.count }}</h5>
+                <p class="card-text">Total produits</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-danger">
+            <div class="card-body">
+                <h5 class="card-title text-danger">
+                    {{ produits_en_alerte_count }}
+                </h5>
+                <p class="card-text">Produits en alerte</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-success">
+            <div class="card-body">
+                <h5 class="card-title text-success">
+                    {{ produits_stock_normal_count }}
+                </h5>
+                <p class="card-text">Stock normal</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">
+                    {{ total_unites }}
+                </h5>
+                <p class="card-text">Unités totales</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Informations STT -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-stt alert-info">
+            <h5><i class="bi bi-info-circle"></i> Gestion des stocks - STT</h5>
+            <p class="mb-2">
+                <strong>Propriété ACID - Cohérence :</strong> 
+                Le système maintient l'intégrité des données en garantissant que le stock 
+                ne devient jamais négatif lors des transactions de vente.
+            </p>
+            <p class="mb-0">
+                <strong>Seuils d'alerte :</strong> 
+                Les produits dont le stock est inférieur ou égal au seuil d'alerte 
+                sont signalés en rouge pour permettre un réapprovisionnement rapide.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

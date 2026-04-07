@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Clients - STT Supermarché{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-people"></i> Gestion des Clients</h1>
+            <div>
+                <a href="{% url 'ressources:ajouter_client' %}" class="btn btn-success me-2">
+                    <i class="bi bi-plus-circle"></i> Ajouter un client
+                </a>
+                <a href="{% url 'ressources:dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour au dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Liste des clients -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0">
+                    <i class="bi bi-people"></i> 
+                    Clients ({{ clients_data|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if clients_data %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Contact</th>
+                                    <th>Total achats</th>
+                                    <th>Nombre d'achats</th>
+                                    <th>Dernier achat</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client_data in clients_data %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ client_data.client.nom }}</strong>
+                                        {% if client_data.client.client_fidele %}
+                                            <i class="bi bi-star-fill text-warning" title="Client fidèle"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="small">
+                                            <div><i class="bi bi-telephone"></i> {{ client_data.client.telephone }}</div>
+                                            {% if client_data.client.email %}
+                                                <div><i class="bi bi-envelope"></i> {{ client_data.client.email }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold">{{ client_data.total_achats|floatformat:2 }} MAD</td>
+                                    <td>{{ client_data.nombre_achats }}</td>
+                                    <td>
+                                        {% if client_data.dernier_achat %}
+                                            {{ client_data.dernier_achat.date_vente|date:"d/m/Y" }}
+                                        {% else %}
+                                            <span class="text-muted">Jamais</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if client_data.client.client_fidele %}
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-star-fill"></i> Fidèle
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Normal</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'ressources:fiche_client' client_data.client.id %}" 
+                                               class="btn btn-sm btn-outline-primary" title="Voir fiche">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-people text-muted fs-1"></i>
+                        <h5 class="text-muted mt-3">Aucun client enregistré</h5>
+                        <p class="text-muted">Commencez par ajouter des clients à votre base de données</p>
+                        <a href="{% url 'ressources:ajouter_client' %}" class="btn btn-stt">
+                            <i class="bi bi-plus-circle"></i> Ajouter un client
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques -->
+{% if clients_data %}
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">{{ clients_data|length }}</h5>
+                <p class="card-text">Total clients</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-warning">
+            <div class="card-body">
+                <h5 class="card-title text-warning">
+                    {{ clients_fideles_count }}
+                </h5>
+                <p class="card-text">Clients fidèles</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-success">
+            <div class="card-body">
+                <h5 class="card-title text-success">
+                    {{ total_nombre_achats }}
+                </h5>
+                <p class="card-text">Total achats</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center border-primary">
+            <div class="card-body">
+                <h5 class="card-title text-primary">
+                    {{ total_achats_global|floatformat:2 }} MAD
+                </h5>
+                <p class="card-text">CA total (MAD)</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Informations STT -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-stt alert-info">
+            <h5><i class="bi bi-info-circle"></i> Gestion des Clients - STT</h5>
+            <p class="mb-2">
+                <strong>Propriété ACID - Cohérence :</strong> 
+                Chaque client est lié de manière cohérente à l'historique de ses achats, 
+                garantissant l'intégrité des données relationnelles.
+            </p>
+            <p class="mb-0">
+                <strong>Suivi client :</strong> 
+                Le système maintient un historique complet des transactions par client, 
+                permettant une analyse précise du comportement d'achat.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

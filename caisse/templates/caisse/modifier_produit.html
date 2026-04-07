@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modifier {{ produit.nom }} - STT Supermarché{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-pencil"></i> Modifier un Produit</h1>
+            <a href="{% url 'caisse:liste_produits' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour aux produits
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0">
+                    <i class="bi bi-pencil-square"></i> 
+                    Modifier : {{ produit.nom }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nom" class="form-label">Nom du produit *</label>
+                            <input type="text" class="form-control" id="nom" name="nom" 
+                                   value="{{ produit.nom }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="categorie" class="form-label">Catégorie *</label>
+                            <select class="form-select" id="categorie" name="categorie" required>
+                                <option value="">-- Sélectionner une catégorie --</option>
+                                <option value="Alimentaire" {% if produit.categorie == 'Alimentaire' %}selected{% endif %}>Alimentaire</option>
+                                <option value="Boissons" {% if produit.categorie == 'Boissons' %}selected{% endif %}>Boissons</option>
+                                <option value="Produits laitiers" {% if produit.categorie == 'Produits laitiers' %}selected{% endif %}>Produits laitiers</option>
+                                <option value="Épicerie" {% if produit.categorie == 'Épicerie' %}selected{% endif %}>Épicerie</option>
+                                <option value="Fruits et légumes" {% if produit.categorie == 'Fruits et légumes' %}selected{% endif %}>Fruits et légumes</option>
+                                <option value="Boulangerie" {% if produit.categorie == 'Boulangerie' %}selected{% endif %}>Boulangerie</option>
+                                <option value="Entretien" {% if produit.categorie == 'Entretien' %}selected{% endif %}>Entretien</option>
+                                <option value="Hygiène" {% if produit.categorie == 'Hygiène' %}selected{% endif %}>Hygiène</option>
+                                <option value="Autre" {% if produit.categorie == 'Autre' %}selected{% endif %}>Autre</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="prix_unitaire" class="form-label">Prix unitaire (MAD) *</label>
+                            <input type="number" class="form-control" id="prix_unitaire" name="prix_unitaire" 
+                                   step="0.01" min="0.01" value="{{ produit.prix_unitaire }}" required>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="quantite_stock" class="form-label">Quantité en stock *</label>
+                            <input type="number" class="form-control" id="quantite_stock" name="quantite_stock" 
+                                   min="0" value="{{ produit.quantite_stock }}" required>
+                            {% if produit.est_en_alerte_stock %}
+                                <div class="form-text text-danger">
+                                    <i class="bi bi-exclamation-triangle"></i> 
+                                    Stock bas (≤ {{ produit.seuil_alerte }})
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="seuil_alerte" class="form-label">Seuil d'alerte *</label>
+                            <input type="number" class="form-control" id="seuil_alerte" name="seuil_alerte" 
+                                   min="1" value="{{ produit.seuil_alerte }}" required>
+                            <div class="form-text">Alerte quand le stock ≤ ce seuil</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-stt btn-lg">
+                                <i class="bi bi-check-circle"></i> Enregistrer les modifications
+                            </button>
+                            <a href="{% url 'caisse:liste_produits' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informations actuelles</h5>
+            </div>
+            <div class="card-body">
+                <h6>Statut du produit :</h6>
+                <ul class="small">
+                    <li><strong>Nom :</strong> {{ produit.nom }}</li>
+                    <li><strong>Catégorie :</strong> {{ produit.categorie }}</li>
+                    <li><strong>Prix actuel :</strong> {{ produit.prix_unitaire|floatformat:2 }} MAD</li>
+                    <li><strong>Stock actuel :</strong> 
+                        <span class="{% if produit.est_en_alerte_stock %}text-danger fw-bold{% else %}text-success{% endif %}">
+                            {{ produit.quantite_stock }}
+                        </span>
+                    </li>
+                    <li><strong>Seuil actuel :</strong> {{ produit.seuil_alerte }}</li>
+                    <li><strong>Date d'ajout :</strong> {{ produit.date_ajout|date:"d/m/Y H:i" }}</li>
+                </ul>
+                
+                {% if produit.est_en_alerte_stock %}
+                    <div class="alert alert-warning small">
+                        <i class="bi bi-exclamation-triangle"></i> 
+                        Ce produit est en alerte de stock!
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Historique des ventes -->
+        <div class="card mt-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="bi bi-clock-history"></i> Dernières ventes</h6>
+            </div>
+            <div class="card-body p-2">
+                {% with ventes_recentes=produit.vente_set.all|slice:":5" %}
+                    {% if ventes_recentes %}
+                        <div class="small">
+                            {% for vente in ventes_recentes %}
+                                <div class="mb-2">
+                                    <strong>{{ vente.date_vente|date:"d/m H:i" }}</strong><br>
+                                    {{ vente.quantite }}x - {{ vente.prix_total|floatformat:2 }} MAD
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="small text-muted mb-0">Aucune vente enregistrée</p>
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

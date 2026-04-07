@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - STT Supermarché{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-speedometer2"></i> Dashboard STT</h1>
+            <div>
+                <button onclick="location.reload()" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-arrow-clockwise"></i> Actualiser
+                </button>
+                <a href="{% url 'caisse:accueil' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-house"></i> Accueil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Compteurs en temps réel -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card h-100 border-primary">
+            <div class="card-body text-center">
+                <i class="bi bi-receipt text-primary fs-1"></i>
+                <h3 class="card-title">{{ nombre_transactions }}</h3>
+                <p class="card-text">Transactions aujourd'hui</p>
+                <small class="text-muted">STT - En temps réel</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card h-100 border-success">
+            <div class="card-body text-center">
+                <i class="bi bi-currency-euro text-success fs-1"></i>
+                <h3 class="card-title">{{ chiffre_affaires_jour|floatformat:2 }} MAD</h3>
+                <p class="card-text">Chiffre d'affaires du jour</p>
+                <small class="text-muted">STT - Données validées</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card h-100 border-danger">
+            <div class="card-body text-center">
+                <i class="bi bi-exclamation-triangle text-danger fs-1"></i>
+                <h3 class="card-title">{{ nombre_alertes_stock }}</h3>
+                <p class="card-text">Produits en alerte de stock</p>
+                <small class="text-muted">STT - Monitoring</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card h-100 border-info">
+            <div class="card-body text-center">
+                <i class="bi bi-people text-info fs-1"></i>
+                <h3 class="card-title">{{ nombre_employes_actifs }}</h3>
+                <p class="card-text">Employés actifs</p>
+                <small class="text-muted">STT - Ressources</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Graphiques Chart.js -->
+<div class="row">
+    <!-- Ventes par jour - Graphe barres -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Ventes par jour (7 derniers jours)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="ventesJourChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ventes par mois - Graphe ligne -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Ventes par mois ({{ "now"|date:"Y" }})</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="ventesMoisChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top produits - Graphe camembert -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Top 5 produits les plus vendus</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="topProduitsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chiffre d'affaires cumulé - Graphe aire -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Chiffre d'affaires cumulé par semaine</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="caCumuleChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations STT -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-stt alert-info">
+            <h5><i class="bi bi-info-circle"></i> Tableau de Bord STT</h5>
+            <p class="mb-2">
+                <strong>Propriété ACID - Isolation :</strong> 
+                Les données affichées sont des <strong>instantanés cohérents</strong> de l'état du système. 
+                Chaque graphique représente une vue isolée et consistante des transactions.
+            </p>
+            <p class="mb-0">
+                <strong>Mise à jour en temps réel :</strong> 
+                Les compteurs reflètent l'état actuel du système, tandis que les graphiques 
+                montrent les tendances historiques pour l'aide à la décision.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ labels_jours|json_script:"labels-jours" }}
+{{ donnees_ventes_jour|json_script:"donnees-ventes-jour" }}
+{{ labels_mois|json_script:"labels-mois" }}
+{{ donnees_ventes_mois|json_script:"donnees-ventes-mois" }}
+{{ labels_produits|json_script:"labels-produits" }}
+{{ donnees_produits|json_script:"donnees-produits" }}
+{{ labels_semaines|json_script:"labels-semaines" }}
+{{ donnees_semaines|json_script:"donnees-semaines" }}
+
+<script>
+// Données depuis Django
+const labelsJours = JSON.parse(document.getElementById('labels-jours').textContent);
+const donneesVentesJour = JSON.parse(document.getElementById('donnees-ventes-jour').textContent);
+const labelsMois = JSON.parse(document.getElementById('labels-mois').textContent);
+const donneesVentesMois = JSON.parse(document.getElementById('donnees-ventes-mois').textContent);
+const labelsProduits = JSON.parse(document.getElementById('labels-produits').textContent);
+const donneesProduits = JSON.parse(document.getElementById('donnees-produits').textContent);
+const labelsSemaines = JSON.parse(document.getElementById('labels-semaines').textContent);
+const donneesSemaines = JSON.parse(document.getElementById('donnees-semaines').textContent);
+
+// Configuration Chart.js
+Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+Chart.defaults.color = '#042C53';
+
+// 1. Ventes par jour - Graphe barres
+const ventesJourCtx = document.getElementById('ventesJourChart').getContext('2d');
+new Chart(ventesJourCtx, {
+    type: 'bar',
+    data: {
+        labels: labelsJours,
+        datasets: [{
+            label: 'Ventes (MAD)',
+            data: donneesVentesJour,
+            backgroundColor: 'rgba(4, 44, 83, 0.6)',
+            borderColor: 'rgba(4, 44, 83, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            title: {
+                display: true,
+                text: 'Évolution des ventes quotidiennes'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return value + ' MAD';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 2. Ventes par mois - Graphe ligne
+const ventesMoisCtx = document.getElementById('ventesMoisChart').getContext('2d');
+new Chart(ventesMoisCtx, {
+    type: 'line',
+    data: {
+        labels: labelsMois,
+        datasets: [{
+            label: 'Ventes (MAD)',
+            data: donneesVentesMois,
+            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+            borderColor: 'rgba(25, 135, 84, 1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            title: {
+                display: true,
+                text: 'Tendance mensuelle des ventes'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return value + ' MAD';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 3. Top produits - Graphe camembert
+const topProduitsCtx = document.getElementById('topProduitsChart').getContext('2d');
+new Chart(topProduitsCtx, {
+    type: 'pie',
+    data: {
+        labels: labelsProduits,
+        datasets: [{
+            data: donneesProduits,
+            backgroundColor: [
+                'rgba(4, 44, 83, 0.8)',
+                'rgba(25, 135, 84, 0.8)',
+                'rgba(255, 193, 7, 0.8)',
+                'rgba(220, 53, 69, 0.8)',
+                'rgba(13, 202, 240, 0.8)'
+            ],
+            borderColor: '#fff',
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            title: {
+                display: true,
+                text: 'Répartition des ventes par produit'
+            }
+        }
+    }
+});
+
+// 4. Chiffre d'affaires cumulé - Graphe aire
+const caCumuleCtx = document.getElementById('caCumuleChart').getContext('2d');
+new Chart(caCumuleCtx, {
+    type: 'line',
+    data: {
+        labels: labelsSemaines,
+        datasets: [{
+            label: 'CA Cumulé (MAD)',
+            data: donneesSemaines,
+            backgroundColor: 'rgba(13, 202, 240, 0.2)',
+            borderColor: 'rgba(13, 202, 240, 1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            title: {
+                display: true,
+                text: 'Progression du chiffre d\'affaires'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return value + ' MAD';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

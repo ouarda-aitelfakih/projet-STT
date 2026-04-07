@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestion de la Paie - STT Supermarché{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-cash-stack"></i> Gestion de la Paie</h1>
+            <a href="{% url 'ressources:dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour au dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Sélection du mois -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="mois" class="form-label">Mois de paie</label>
+                        <input type="month" class="form-control" id="mois" name="mois" 
+                               value="{{ mois_selectionne }}">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-funnel"></i> Afficher
+                        </button>
+                        <a href="{% url 'ressources:gestion_paie' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Mois actuel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques du mois -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-center border-primary">
+            <div class="card-body">
+                <h5 class="card-title text-primary">{{ stats.nombre_employes }}</h5>
+                <p class="card-text">Employés avec paie</p>
+                <small class="text-muted">Mois: {{ mois_selectionne }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center border-success">
+            <div class="card-body">
+                <h5 class="card-title text-success">{{ stats.total_salaires|floatformat:2 }} MAD</h5>
+                <p class="card-text">Masse salariale totale</p>
+                <small class="text-muted">Mois: {{ mois_selectionne }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center border-info">
+            <div class="card-body">
+                <h5 class="card-title text-info">{{ stats.salaire_moyen|floatformat:2 }} MAD</h5>
+                <p class="card-text">Salaire moyen</p>
+                <small class="text-muted">Mois: {{ mois_selectionne }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulletins de paie -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0">
+                    <i class="bi bi-receipt"></i> 
+                    Bulletins de paie - {{ mois_selectionne }}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if paies %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Employé</th>
+                                    <th>Poste</th>
+                                    <th>Heures travaillées</th>
+                                    <th>Taux horaire</th>
+                                    <th>Salaire calculé</th>
+                                    <th>Statut</th>
+                                    <th>Date génération</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for paie in paies %}
+                                <tr>
+                                    <td><strong>{{ paie.employe.nom }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ paie.employe.get_poste_display }}</span>
+                                    </td>
+                                    <td>{{ paie.heures_travaillees }}h</td>
+                                    <td>{{ paie.employe.taux_horaire|floatformat:2 }} MAD</td>
+                                    <td class="fw-bold">{{ paie.salaire_calcule|floatformat:2 }} MAD</td>
+                                    <td>
+                                        {% if paie.statut == 'paye' %}
+                                            <span class="badge bg-success">{{ paie.get_statut_display }}</span>
+                                        {% elif paie.statut == 'en_attente' %}
+                                            <span class="badge bg-warning">{{ paie.get_statut_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ paie.get_statut_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ paie.date_generation|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-sm btn-outline-primary" title="Voir bulletin">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            {% if paie.statut == 'en_attente' %}
+                                                <button class="btn btn-sm btn-outline-success" title="Marquer comme payé">
+                                                    <i class="bi bi-check-circle"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-receipt text-muted fs-1"></i>
+                        <h5 class="text-muted mt-3">Aucune paie pour {{ mois_selectionne }}</h5>
+                        <p class="text-muted">
+                            {% if employes_sans_paie %}
+                                Générer les bulletins de paie pour les employés ci-dessous
+                            {% else %}
+                                Aucun employé actif trouvé
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Employés sans paie -->
+{% if employes_sans_paie %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> 
+                    Employés sans paie pour {{ mois_selectionne }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for employe in employes_sans_paie %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-warning">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title mb-1">{{ employe.nom }}</h6>
+                                        <p class="card-text small mb-0">
+                                            {{ employe.get_poste_display }} - 
+                                            {{ employe.taux_horaire|floatformat:2 }} MAD/h
+                                        </p>
+                                    </div>
+                                    <a href="{% url 'ressources:generer_paie' employe.id %}" 
+                                       class="btn btn-warning btn-sm">
+                                        <i class="bi bi-plus-circle"></i> Générer
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Informations STT -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-stt alert-info">
+            <h5><i class="bi bi-info-circle"></i> Gestion de la Paie - STT</h5>
+            <p class="mb-2">
+                <strong>Propriété ACID - Atomicité :</strong> 
+                La génération d'un bulletin de paie calcule automatiquement le salaire 
+                et crée l'enregistrement de manière atomique, garantissant la cohérence.
+            </p>
+            <p class="mb-0">
+                <strong>Calcul automatique :</strong> 
+                Salaire = Heures travaillées × Taux horaire. 
+                Le système assure la précision des calculs et la traçabilité des paiements.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

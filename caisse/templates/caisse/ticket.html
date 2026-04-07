@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ticket de Caisse - {{ vente.numero_transaction }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-receipt"></i> Ticket de Caisse</h1>
+            <div>
+                <button onclick="window.print()" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-printer"></i> Imprimer
+                </button>
+                <a href="{% url 'caisse:nouvelle_vente' %}" class="btn btn-stt">
+                    <i class="bi bi-plus-circle"></i> Nouvelle Vente
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket de caisse -->
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="ticket-caisse">
+            <!-- En-tête du ticket -->
+            <div class="text-center mb-4">
+                <h3 class="fw-bold">STT MARJANE</h3>
+                <p class="mb-1">Système de Traitement des Transactions</p>
+                <p class="mb-1">Supermarché - FST Tanger</p>
+                <p class="mb-1">Tél: +212 5XXX-XXXXXX</p>
+                <hr>
+            </div>
+            
+            <!-- Informations transaction -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Ticket N°:</strong></span>
+                    <span>{{ vente.numero_transaction }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Date:</strong></span>
+                    <span>{{ vente.date_vente|date:"d/m/Y" }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Heure:</strong></span>
+                    <span>{{ vente.date_vente|time:"H:i:s" }}</span>
+                </div>
+                {% if vente.client %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Client:</strong></span>
+                    <span>{{ vente.client.nom }}</span>
+                </div>
+                {% endif %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span><strong>Statut:</strong></span>
+                    <span class="text-success fw-bold">{{ vente.get_statut_display|upper }}</span>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <!-- Détails de l'achat -->
+            <div class="mb-3">
+                <h5 class="text-center mb-3">DÉTAILS DE L'ACHAT</h5>
+                
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between">
+                        <span>{{ vente.produit.nom }}</span>
+                        <span>{{ vente.quantite }}x</span>
+                    </div>
+                </div>
+                
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between">
+                        <span class="small">Prix unitaire:</span>
+                        <span>{{ vente.prix_unitaire|floatformat:2 }} MAD</span>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between fw-bold">
+                    <span>TOTAL:</span>
+                    <span>{{ vente.prix_total|floatformat:2 }} MAD</span>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <!-- Message STT -->
+            <div class="text-center mb-3">
+                <p class="mb-1"><strong>✅ Transaction validée — STT</strong></p>
+                <p class="small mb-1">Propriétés ACID garanties</p>
+                <p class="small mb-0">Merci de votre visite!</p>
+            </div>
+            
+            <!-- Pied de page -->
+            <div class="text-center small">
+                <p class="mb-1">** Ticket de caisse **</p>
+                <p class="mb-0">Conservez ce ticket pour tout retour</p>
+            </div>
+        </div>
+        
+        <!-- Informations STT -->
+        <div class="alert alert-stt alert-info mt-3">
+            <h6><i class="bi bi-info-circle"></i> Informations STT</h6>
+            <p class="mb-2 small">
+                <strong>Transaction ID:</strong> {{ vente.numero_transaction }}
+            </p>
+            <p class="mb-2 small">
+                <strong>Propriété ACID - Durabilité :</strong> 
+                Cette transaction est maintenant <strong>permanente</strong> et ne sera pas perdue 
+                même en cas de panne système.
+            </p>
+            <p class="mb-0 small">
+                <strong>Stock mis à jour:</strong> 
+                Le stock de "{{ vente.produit.nom }}" a été décrémenté de {{ vente.quantite }} unité(s) 
+                dans la même transaction atomique.
+            </p>
+        </div>
+        
+        <!-- Actions -->
+        <div class="text-center mt-3">
+            <a href="{% url 'caisse:accueil' %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-house"></i> Accueil
+            </a>
+            <a href="{% url 'caisse:nouvelle_vente' %}" class="btn btn-stt">
+                <i class="bi bi-plus-circle"></i> Nouvelle Vente
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Styles pour impression -->
+<style>
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .ticket-caisse {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+    
+    .alert {
+        display: none !important;
+    }
+    
+    .btn {
+        display: none !important;
+    }
+    
+    h1 {
+        display: none !important;
+    }
+    
+    .d-flex.justify-content-between {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}

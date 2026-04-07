@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Nouvelle Vente - STT Supermarché{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-plus-circle"></i> Nouvelle Vente</h1>
+            <a href="{% url 'caisse:accueil' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour à l'accueil
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Alerte STT -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-stt alert-warning">
+            <h5><i class="bi bi-shield-check"></i> Propriété ACID : Atomicité</h5>
+            <p class="mb-0">
+                <strong>STT - Transaction Atomique :</strong> Lorsque vous validez cette vente, 
+                le système va enregistrer la vente ET décrémenter le stock dans une <strong>seule transaction</strong>. 
+                Si le stock est insuffisant, <strong>toute l'opération sera annulée</strong>. 
+                C'est le principe du "tout ou rien".
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-receipt"></i> Informations de la Vente</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="formVente">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="produit" class="form-label">Produit *</label>
+                            <select class="form-select" id="produit" name="produit" required>
+                                <option value="">-- Sélectionner un produit --</option>
+                                {% for produit in produits %}
+                                    <option value="{{ produit.id }}" 
+                                            data-stock="{{ produit.quantite_stock }}"
+                                            data-prix="{{ produit.prix_unitaire }}"
+                                            data-alerte="{{ produit.est_en_alerte_stock|yesno:'true,false' }}">
+                                        {{ produit.nom }} - Stock: {{ produit.quantite_stock }} - {{ produit.prix_unitaire }} MAD
+                                        {% if produit.est_en_alerte_stock %}
+                                            <span class="text-danger">⚠️</span>
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="client" class="form-label">Client</label>
+                            <select class="form-select" id="client" name="client">
+                                <option value="">-- Client anonyme --</option>
+                                {% for client in clients %}
+                                    <option value="{{ client.id }}">{{ client.nom }} ({{ client.telephone }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="quantite" class="form-label">Quantité *</label>
+                            <input type="number" class="form-control" id="quantite" name="quantite" 
+                                   min="1" value="1" required>
+                            <div class="form-text">Stock disponible: <span id="stockDisponible">-</span></div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="prix_unitaire" class="form-label">Prix unitaire (MAD)</label>
+                            <input type="text" class="form-control" id="prix_unitaire" readonly>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="prix_total" class="form-label">Total (MAD)</label>
+                            <input type="text" class="form-control" id="prix_total" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div id="alerteStock" class="alert alert-danger d-none">
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                <span id="messageAlerte"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-stt btn-lg" id="btnValider">
+                                <i class="bi bi-check-circle"></i> Valider la vente
+                            </button>
+                            <a href="{% url 'caisse:accueil' %}" class="btn btn-outline-secondary btn-lg ms-2">
+                                <i class="bi bi-x-circle"></i> Annuler
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Aide STT</h5>
+            </div>
+            <div class="card-body">
+                <h6>Processus de transaction :</h6>
+                <ol class="small">
+                    <li>Sélectionnez un produit disponible</li>
+                    <li>Vérifiez le stock disponible</li>
+                    <li>Indiquez la quantité souhaitée</li>
+                    <li>Choisissez un client (optionnel)</li>
+                    <li>Validez la transaction</li>
+                </ol>
+                
+                <hr>
+                
+                <h6><i class="bi bi-shield-check text-success"></i> Sécurité STT :</h6>
+                <ul class="small">
+                    <li><strong>Atomicité :</strong> Transaction tout ou rien</li>
+                    <li><strong>Cohérence :</strong> Stock toujours correct</li>
+                    <li><strong>Isolation :</strong> Pas de conflits entre ventes</li>
+                    <li><strong>Durabilité :</strong> Données permanentes</li>
+                </ul>
+                
+                <div class="alert alert-info small">
+                    <i class="bi bi-lightbulb"></i> 
+                    Le système vérifie automatiquement la disponibilité du stock avant de valider la transaction.
+                </div>
+            </div>
+        </div>
+        
+        <!-- Produits en alerte -->
+        {% if produits %}
+            <div class="card mt-3">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Alertes de stock</h6>
+                </div>
+                <div class="card-body p-2">
+                    {% for produit in produits %}
+                        {% if produit.est_en_alerte_stock %}
+                            <div class="small text-danger mb-1">
+                                <strong>{{ produit.nom }}</strong>: {{ produit.quantite_stock }} / {{ produit.seuil_alerte }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const produitSelect = document.getElementById('produit');
+    const quantiteInput = document.getElementById('quantite');
+    const prixUnitaireInput = document.getElementById('prix_unitaire');
+    const prixTotalInput = document.getElementById('prix_total');
+    const stockDisponibleSpan = document.getElementById('stockDisponible');
+    const alerteStockDiv = document.getElementById('alerteStock');
+    const messageAlerteSpan = document.getElementById('messageAlerte');
+    const btnValider = document.getElementById('btnValider');
+    
+    function updatePrixTotal() {
+        const quantite = parseInt(quantiteInput.value) || 0;
+        const prixUnitaire = parseFloat(prixUnitaireInput.value) || 0;
+        const total = quantite * prixUnitaire;
+        prixTotalInput.value = total.toFixed(2) + ' MAD';
+    }
+    
+    function verifierStock() {
+        const selectedOption = produitSelect.options[produitSelect.selectedIndex];
+        const quantite = parseInt(quantiteInput.value) || 0;
+        const stockDisponible = parseInt(selectedOption.dataset.stock) || 0;
+        const estEnAlerte = selectedOption.dataset.alerte === 'true';
+        
+        stockDisponibleSpan.textContent = stockDisponible;
+        
+        if (quantite > stockDisponible) {
+            alerteStockDiv.classList.remove('d-none');
+            messageAlerteSpan.textContent = `Stock insuffisant! Disponible: ${stockDisponible}, Demandé: ${quantite}`;
+            btnValider.disabled = true;
+            btnValider.classList.add('btn-danger');
+            btnValider.classList.remove('btn-stt');
+        } else {
+            alerteStockDiv.classList.add('d-none');
+            btnValider.disabled = false;
+            btnValider.classList.remove('btn-danger');
+            btnValider.classList.add('btn-stt');
+        }
+        
+        if (estEnAlerte && stockDisponible > 0) {
+            stockDisponibleSpan.className = 'text-warning fw-bold';
+        } else if (stockDisponible > 0) {
+            stockDisponibleSpan.className = 'text-success fw-bold';
+        } else {
+            stockDisponibleSpan.className = 'text-danger fw-bold';
+        }
+    }
+    
+    produitSelect.addEventListener('change', function() {
+        const selectedOption = produitSelect.options[produitSelect.selectedIndex];
+        const prix = selectedOption.dataset.prix || '';
+        prixUnitaireInput.value = prix;
+        updatePrixTotal();
+        verifierStock();
+    });
+    
+    quantiteInput.addEventListener('input', function() {
+        updatePrixTotal();
+        verifierStock();
+    });
+    
+    // Initialisation
+    updatePrixTotal();
+});
+</script>
+{% endblock %}
