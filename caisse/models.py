@@ -60,10 +60,10 @@ class Vente(models.Model):
     client = models.ForeignKey('ressources.Client', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Client")
     quantite = models.IntegerField(verbose_name="Quantité vendue")
     prix_unitaire = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix unitaire (MAD)")
-    prix_total = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Prix total (MAD)")
+    prix_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Prix total (MAD)")
     date_vente = models.DateTimeField(auto_now_add=True, verbose_name="Date de vente")
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='validée', verbose_name="Statut")
-    numero_transaction = models.CharField(max_length=50, unique=True, verbose_name="Numéro de transaction")
+    numero_transaction = models.CharField(max_length=50, unique=True, null=True, blank=True, verbose_name="Numéro de transaction")
     
     class Meta:
         verbose_name = "Vente"
@@ -79,6 +79,10 @@ class Vente(models.Model):
             raise ValidationError("La quantité doit être positive")
         if self.prix_unitaire <= 0:
             raise ValidationError("Le prix unitaire doit être positif")
+        
+        # Validation du prix total s'il est déjà défini
+        if self.prix_total and self.prix_total <= 0:
+            raise ValidationError("Le prix total doit être positif")
     
     def save(self, *args, **kwargs):
         """STT : Sauvegarde avec génération automatique du numéro de transaction"""
