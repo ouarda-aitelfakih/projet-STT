@@ -119,13 +119,17 @@
                                     <td>{{ paie.date_generation|date:"d/m/Y H:i" }}</td>
                                     <td>
                                         <div class="btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-primary" title="Voir bulletin">
+                                            <a href="{% url 'ressources:voir_bulletin_paie' paie.id %}" 
+                                               class="btn btn-sm btn-outline-primary" title="Voir bulletin">
                                                 <i class="bi bi-eye"></i>
-                                            </button>
+                                            </a>
                                             {% if paie.statut == 'en_attente' %}
-                                                <button class="btn btn-sm btn-outline-success" title="Marquer comme payé">
+                                                <a href="{% url 'ressources:changer_statut_paie' paie.id %}?statut=paye" 
+                                                   class="btn btn-sm btn-outline-success" 
+                                                   title="Marquer comme payé"
+                                                   onclick="return confirm('Marquer cette paie comme payée ?')">
                                                     <i class="bi bi-check-circle"></i>
-                                                </button>
+                                                </a>
                                             {% endif %}
                                         </div>
                                     </td>

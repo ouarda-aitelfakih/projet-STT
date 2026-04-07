@@ -103,7 +103,7 @@ class ApprovisionnementAdmin(admin.ModelAdmin):
     list_filter = ['statut', 'date_reception', 'produit__categorie']
     search_fields = ['produit__nom', 'fournisseur', 'reference_facture']
     list_editable = ['statut']
-    readonly_fields = ['cout_unitaire', 'date_reception']
+    readonly_fields = ['cout_unitaire', 'cout_total', 'date_reception']
     
     fieldsets = (
         ('Informations approvisionnement', {
