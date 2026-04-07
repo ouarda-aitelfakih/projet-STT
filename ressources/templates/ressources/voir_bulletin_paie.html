@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bulletin de Paie - {{ paie.employe.nom }} - STT Supermarché{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-receipt"></i> Bulletin de Paie</h1>
+            <a href="{% url 'ressources:gestion_paie' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Retour à la gestion
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Bulletin de paie -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header card-header-stt">
+                <h5 class="mb-0">
+                    <i class="bi bi-file-earmark-text"></i> 
+                    Bulletin de Paie - {{ paie.mois }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- En-tête du bulletin -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Informations Employé</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Nom :</strong></td>
+                                <td>{{ paie.employe.nom }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Poste :</strong></td>
+                                <td>{{ paie.employe.get_poste_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Téléphone :</strong></td>
+                                <td>{{ paie.employe.telephone }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email :</strong></td>
+                                <td>{{ paie.employe.email|default:"Non renseigné" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Informations Bulletin</h6>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Mois :</strong></td>
+                                <td>{{ paie.mois }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Date génération :</strong></td>
+                                <td>{{ paie.date_generation|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Statut :</strong></td>
+                                <td>
+                                    {% if paie.statut == 'paye' %}
+                                        <span class="badge bg-success">{{ paie.get_statut_display }}</span>
+                                    {% elif paie.statut == 'en_attente' %}
+                                        <span class="badge bg-warning">{{ paie.get_statut_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">{{ paie.get_statut_display }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Calcul du salaire -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h6 class="text-primary">Détail du Calcul</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Description</th>
+                                        <th>Quantité</th>
+                                        <th>Taux</th>
+                                        <th>Montant</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Heures travaillées</td>
+                                        <td>{{ paie.heures_travaillees }}h</td>
+                                        <td>{{ paie.employe.taux_horaire|floatformat:2 }} MAD/h</td>
+                                        <td class="fw-bold">{{ paie.salaire_calcule|floatformat:2 }} MAD</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="3" class="text-end">Salaire Brut :</th>
+                                        <th class="fw-bold text-primary">{{ paie.salaire_calcule|floatformat:2 }} MAD</th>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="3" class="text-end">Salaire Net :</th>
+                                        <th class="fw-bold text-success">{{ paie.salaire_calcule|floatformat:2 }} MAD</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex gap-2">
+                            <button onclick="window.print()" class="btn btn-outline-primary">
+                                <i class="bi bi-printer"></i> Imprimer
+                            </button>
+                            {% if paie.statut == 'en_attente' %}
+                                <a href="{% url 'ressources:changer_statut_paie' paie.id %}?statut=paye" 
+                                   class="btn btn-success"
+                                   onclick="return confirm('Marquer cette paie comme payée ?')">
+                                    <i class="bi bi-check-circle"></i> Marquer comme payée
+                                </a>
+                                <a href="{% url 'ressources:changer_statut_paie' paie.id %}?statut=annule" 
+                                   class="btn btn-danger"
+                                   onclick="return confirm('Annuler ce bulletin de paie ?')">
+                                    <i class="bi bi-x-circle"></i> Annuler
+                                </a>
+                            {% elif paie.statut == 'paye' %}
+                                <a href="{% url 'ressources:changer_statut_paie' paie.id %}?statut=en_attente" 
+                                   class="btn btn-warning"
+                                   onclick="return confirm('Remettre cette paie en attente ?')">
+                                    <i class="bi bi-clock"></i> Remettre en attente
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Informations STT -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-stt alert-info">
+            <h5><i class="bi bi-info-circle"></i> Bulletin de Paie - STT</h5>
+            <p class="mb-2">
+                <strong>Calcul automatique :</strong> 
+                Le salaire est calculé automatiquement selon la formule : 
+                <code>Salaire = Heures travaillées × Taux horaire</code>
+            </p>
+            <p class="mb-0">
+                <strong>Propriété ACID :</strong> 
+                Ce bulletin de paie a été généré de manière atomique, garantissant 
+                la cohérence et l'intégrité des données.
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    .btn {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}
