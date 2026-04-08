@@ -7,8 +7,8 @@ Projet développé dans le cadre du cours L3 IDAI - FST Tanger
 STT Supermarché est une application web de gestion complète pour supermarché développée avec Django. Le système permet de gérer les ventes, les stocks, les clients, les employés et les approvisionnements tout en respectant les propriétés ACID des transactions.
 
 
-## Lien de Védio
-
+## Lien de Vidéo
+[![STT Supermarché Demo](https://img.youtube.com/vi/aQpy_Uh1lgw/0.jpg)](https://youtu.be/aQpy_Uh1lgw)
 
 ## 🚀 Fonctionnalités
 
